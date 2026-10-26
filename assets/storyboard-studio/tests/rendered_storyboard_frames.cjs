@@ -1,0 +1,40 @@
+// Isolated actual frontend functions; no live board/catalog/DOM mutation.
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const source=fs.readFileSync('app.js','utf8').replace(/init\(\);\s*$/,'');
+const elements=new Map(),el=id=>{if(!elements.has(id))elements.set(id,{style:{},dataset:{},textContent:'',innerHTML:'',querySelectorAll:()=>[],querySelector:()=>null,setAttribute(){}});return elements.get(id)};
+const ctx={console,crypto:{randomUUID:()=> 'test'},performance:{now:()=>1},CSS:{escape:s=>s},window:{matchMedia:()=>({matches:false}),addEventListener(){}},document:{getElementById:el,querySelector:()=>null,querySelectorAll:()=>[],documentElement:{style:{setProperty(){}}}},localStorage:{getItem:()=>null,setItem(){}},setTimeout:()=>0,clearTimeout(){},requestAnimationFrame(){},URL,location:{href:'http://127.0.0.1/'}};
+vm.createContext(ctx);vm.runInContext(source,ctx);const run=s=>vm.runInContext(s,ctx);let assertions=0;const check=s=>{assert.equal(run(s),true,s);assertions++};
+run(`board={board_id:'test',nodes:[{id:'a',scene_id:'one',reference_id:'ra'},{id:'b',scene_id:'two',reference_id:'rb'}],effects:[],feedback_cards:[],edges:[],chosen_path:['a','b']};catalog=[];const fx={id:'fx',kind:'lens_flare',preset_id:'soft',enabled:true,settings:{intensity:1,tint:{r:1,g:.2}},target_node_ids:['a','b']};const binding={kind:'lens_flare',preset_id:'soft',enabled:true,settings:{tint:{g:.2,r:1},intensity:1}};const actual={status:'actual_rendered_preview',frames:{start:'/s.png',middle:'/m.png',end:'/e.png'},rendered_effect_bindings:[binding]};`);
+check(`effectFrameStatus(fx)==='Planned effect'`);
+run(`catalog=[{...actual,id:'ra',title:'Actual',version:'native',requires_native_review:true},{...actual,id:'rb'}]`);
+check(`effectFrameStatus(fx)==='Included in storyboard frames'`);
+// Shared effects require every target. Copy IDs are intentionally irrelevant.
+run(`catalog[1].rendered_effect_bindings=[{...binding,id:'different-copy-id'}]`);
+check(`effectFrameStatus(fx)==='Included in storyboard frames'`);
+run(`catalog[1].rendered_effect_bindings=[]`);check(`effectFrameStatus(fx)==='Needs new frames'`);
+run(`catalog[1].rendered_effect_bindings=[binding];fx.settings.intensity=2`);check(`effectFrameStatus(fx)==='Needs new frames'`);
+run(`fx.settings.intensity=1;fx.preset_id='new'`);check(`effectFrameStatus(fx)==='Needs new frames'`);
+run(`fx.preset_id='soft';fx.enabled=false`);check(`effectFrameStatus(fx)==='Needs new frames'`);
+run(`fx.enabled=true;catalog[1].status='current_preview'`);check(`effectFrameStatus(fx)==='Needs new frames'`);
+run(`catalog[0].status='needs_preview'`);check(`effectFrameStatus(fx)==='Planned effect'`);
+run(`catalog[0].status='actual_rendered_preview';catalog[1].status='actual_rendered_preview';catalog[1].rendered_effect_bindings=[{kind:'lens_flare',preset_id:'soft',settings:binding.settings}]`);check(`effectFrameStatus(fx)==='Needs new frames'`);
+run(`catalog[1].rendered_effect_bindings=[{kind:'lens_flare',preset_id:'soft',enabled:true}]`);check(`effectFrameStatus({...fx,settings:{}})==='Needs new frames'`);
+run(`catalog[1].rendered_effect_bindings=[binding];catalog[0].frames={start:'/only.png'}`);check(`isActualRenderedPreview(catalog[0])===false&&effectFrameStatus(fx)==='Needs new frames'`);
+check(`isActualRenderedPreview({status:'actual_rendered_preview',image:'/source-only.png'})===false`);
+run(`catalog[0].frames=actual.frames`);
+check(`isActualRenderedPreview(catalog[0])===true`);
+check(`frameMarkup(catalog[0],'triptych','a').includes('class="triptych actual-rendered-preview"')`);
+check(`frameMarkup(catalog[0],'triptych','a').includes('-triptych-start"')`);
+check(`(frameMarkup(catalog[0]).match(/<img /g)||[]).length===3`);
+check(`popoverFrames(catalog[0],node('a')).includes('popover-frame-row actual-rendered-preview')`);
+check(`!frameMarkup({status:'current_preview',frames:actual.frames}).includes('actual-rendered-preview')`);
+// Native still preview exposes all three real source URLs, with motion unrendered.
+run(`openDialog=html=>{globalThis.dialogHTML=html}`);run(`preview('ra','a')`);
+check(`dialogHTML.includes('/s.png')&&dialogHTML.includes('/m.png')&&dialogHTML.includes('/e.png')&&dialogHTML.includes('Actual start, middle and end frames. Motion has not been rendered.')`);
+check(`dialogHTML.includes('Actual native storyboard · Draft')`);
+run(`board.effects=[fx];effectRegistry=[{id:'lens_flare',title:'Flare',presets:[]}];renderEffects()`);
+check(`elHTML=$('effects').innerHTML;elHTML.includes('Included in storyboard frames')&&!elHTML.includes('Preview not rendered')&&elHTML.includes('aria-live="polite"')`);
+run(`render=()=>{throw Error('Focused inline edit must not rerender')};changed=()=>{};applyEffectCardField('fx','intensity',2,false,false)`);
+check(`$('effect-frame-status-fx').textContent==='Needs new frames'`);
+const css=fs.readFileSync('styles.css','utf8');assert(/\.actual-rendered-preview img\{object-fit:contain;background:#000\}/.test(css));assertions++;
+console.log({status:'PASS',assertions,scope:'Actual metadata/status/frame markup and focused-edit functions; mocked DOM only, no live rendering or appearance claim.'});

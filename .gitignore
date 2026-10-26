@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+output/
+projects/
+.DS_Store
+.env*
+*.p8
+*.p12
+*_Receipt.json

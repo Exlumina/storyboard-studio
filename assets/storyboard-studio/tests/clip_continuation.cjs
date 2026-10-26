@@ -1,0 +1,25 @@
+// Actual Studio functions, isolated mocked DOM and API. No live board mutation.
+async function main(){
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),crypto=require('crypto');
+const elements=new Map();function el(id){if(!elements.has(id))elements.set(id,{id,hidden:true,style:{setProperty(){}},dataset:{},innerHTML:'',textContent:'',value:'',clientWidth:1200,clientHeight:700,classList:{toggle(){},add(){},remove(){}},querySelectorAll:()=>[],querySelector:()=>el('dummy'),setAttribute(){},pause(){this.paused=true},play(){this.paused=false;this.playCount=(this.playCount||0)+1;return Promise.resolve()},showModal(){this.open=true},close(){this.open=false},getBoundingClientRect:()=>({left:0,top:0,width:1200,height:700}),focus(){},click(){}});return elements.get(id)}
+const context={console,crypto,AbortController,performance:{now:()=>1000},CSS:{escape:s=>s},URL,location:{href:'http://127.0.0.1:8840/'},document:{documentElement:{style:{setProperty(){}}},getElementById:el,querySelectorAll:()=>[],querySelector:()=>el('dummy')},window:{matchMedia:()=>({matches:false}),addEventListener(){}},localStorage:{setItem(){},getItem(){return null}},setTimeout:()=>1,clearTimeout(){},requestAnimationFrame(){return 1},cancelAnimationFrame(){},FormData:class{append(name,value){this[name]=value}},fetch:()=>{throw Error('Unexpected network access')}};vm.createContext(context);vm.runInContext(fs.readFileSync('app.js','utf8').replace(/init\(\);\s*$/,''),context);const run=s=>vm.runInContext(s,context);let checks=0;function check(s){assert.equal(run(s),true,s);checks++}
+
+run(`project={id:'test'};board={board_id:'test',nodes:['a','b','c'].map((id,i)=>({id,scene_id:'scn_'+String(i).padStart(32,'0'),title:id.toUpperCase(),reference_id:'r'+id,duration_s:1,trim_start_s:0,trim_end_s:1})),edges:[{id:'ab',from:'a',to:'b',transition:'cut'},{id:'bc',from:'b',to:'c',transition:'continuous'}],chosen_path:['a','b','c'],effects:[]};catalog=board.nodes.map(n=>({id:n.reference_id,title:n.title,video:'/source.mp4',version:'Test',orientation:'horizontal',frames:{},source_interval:{start_s:0,end_s:1}}));const sourceBoard=clone(board);let clipCalls=[];api=async(url,options)=>{if(url==='/api/clip-preview'){clipCalls.push(JSON.parse(options.body).reference_id);return {url:'/bounded.mp4',start_s:0,end_s:1,source_start_s:0,source_end_s:1};}throw Error('Unexpected API');};`);
+check(`clipContinuation(sourceBoard,'a').node.id==='b'`);check(`clipContinuation(sourceBoard,'c').kind==='end'`);
+run(`const branched=clone(sourceBoard);branched.chosen_path=[];branched.edges.push({id:'ac',from:'a',to:'c'});`);check(`clipContinuation(branched,'a').kind==='branch'`);
+run(`const cyclic=clone(sourceBoard);cyclic.edges.push({id:'ca',from:'c',to:'a'});`);check(`clipContinuation(cyclic,'c',['a','b','c']).kind==='cycle'`);
+run(`const withEnd=clone(sourceBoard);withEnd.nodes.push({id:'end',kind:'end'});withEnd.edges.push({from:'c',to:'end'});`);check(`clipContinuation(withEnd,'c').kind==='end'`);
+run(`const withStart=clone(sourceBoard);withStart.nodes.push({id:'start',kind:'start'});withStart.edges=withStart.edges.filter(e=>e.id!=='ab');withStart.edges.push({from:'a',to:'start'},{from:'start',to:'b'});`);check(`clipContinuation(withStart,'a').node.id==='b'`);
+await run(`preview('ra','a',true)`);
+run(`const firstVideo=$('clip');firstVideo.duration=1;firstVideo.currentTime=1;firstVideo.ended=true;firstVideo.onended();`);check(`clipCalls.join(',')==='ra'&&$('clip-continuation').innerHTML.includes('Autoplay rest')&&firstVideo.paused===true`);
+await run(`$('clip-next').onclick()`);check(`clipCalls.join(',')==='ra,rb'`);
+run(`$('clip').duration=1;$('clip').currentTime=1;$('clip').ended=true;$('clip').onended();`);check(`$('clip-continuation').innerHTML.includes('Play next scene')&&clipCalls.join(',')==='ra,rb'`);
+run(`const beforeStop=clipCalls.length;$('clip-stop').onclick();`);check(`clipCalls.length===beforeStop&&$('clip-continuation').innerHTML.includes('Stopped')`);
+await run(`preview('ra','a',true)`);
+run(`$('clip').duration=1;$('clip').currentTime=1;$('clip').ended=true;$('clip').onended();const currentClipCalls=clipCalls.length;$('clip-autoplay-rest').onclick();`);check(`$('story-title').textContent==='B'&&clipCalls[currentClipCalls]==='rb'`);
+await run(`preview('ra','a',true)`);
+run(`const staleUpdate=$('clip').ontimeupdate,staleMetadata=$('clip').onloadedmetadata,staleEnded=$('clip').onended;openDialog('<h2>Replacement</h2>');const replacement=$('detail-content').innerHTML;staleUpdate();staleMetadata();staleEnded();`);check(`$('detail-content').innerHTML===replacement&&$('clip').onended===null`);
+await run(`preview('ra',undefined,true)`);run(`$('clip-continuation').hidden=true;$('clip').duration=1;$('clip').currentTime=1;$('clip').ended=true;$('clip').onended();`);check(`$('clip-continuation').hidden===true`);
+console.log({status:'PASS',assertions:checks,scope:'Actual bounded preview/end-choice functions with mocked DOM and clip transport; no physical playback claim.'});
+}
+main().catch(e=>{console.error(e);process.exitCode=1});

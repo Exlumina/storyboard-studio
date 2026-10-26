@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "title": "Synthetic product film",
+  "asset_policy": "latest-approved",
+  "target_duration_s": 12,
+  "nodes": [
+    {
+      "id": "start",
+      "kind": "start",
+      "title": "Start",
+      "duration_s": 0,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "id": "intro",
+      "kind": "scene",
+      "title": "Meet the object",
+      "description": "A generic cube sits on a neutral stage. Wide establishing view. Synthetic planning example only.",
+      "duration_s": 4,
+      "x": 340,
+      "y": 0
+    },
+    {
+      "id": "detail",
+      "kind": "scene",
+      "title": "Explore the detail",
+      "description": "Move closer to one corner and reveal the surface. No source model or rendered pixels are supplied.",
+      "duration_s": 4,
+      "x": 700,
+      "y": 0
+    },
+    {
+      "id": "finish",
+      "kind": "scene",
+      "title": "Return to the wide view",
+      "description": "Ease back to the opening composition and hold.",
+      "duration_s": 4,
+      "x": 1060,
+      "y": 0
+    },
+    {
+      "id": "end",
+      "kind": "end",
+      "title": "End",
+      "duration_s": 0,
+      "x": 1420,
+      "y": 0
+    }
+  ],
+  "edges": [
+    {
+      "id": "a",
+      "from": "start",
+      "to": "intro",
+      "transition": "cut"
+    },
+    {
+      "id": "b",
+      "from": "intro",
+      "to": "detail",
+      "transition": "cut"
+    },
+    {
+      "id": "c",
+      "from": "detail",
+      "to": "finish",
+      "transition": "cut"
+    },
+    {
+      "id": "d",
+      "from": "finish",
+      "to": "end",
+      "transition": "cut"
+    }
+  ],
+  "chosen_path": [
+    "start",
+    "intro",
+    "detail",
+    "finish",
+    "end"
+  ],
+  "effects": [],
+  "feedback_cards": [],
+  "render_path_ends_here": true
+}
