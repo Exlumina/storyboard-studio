@@ -1,16 +1,24 @@
 # Storyboard Studio
 
-An offline, local storyboard editor for connecting scenes, timing, reference media, and feedback on a dark node canvas. Developed by Exlumina. Version 0.5.2.
+Plan scenes, connect them into a sequence, and keep timing, reference media, and feedback together on a local storyboard canvas.
+
+## Download
+
+[![Download Storyboard Studio ZIP (v0.5.2)](https://img.shields.io/badge/Download-Storyboard_Studio_ZIP-222222?style=for-the-badge)](https://github.com/Exlumina/storyboard-studio/releases/download/v0.5.2/Storyboard_Studio_v0.5.2.zip)
+
+Source package · Python 3.11+ and a modern desktop browser.
+
+[v0.5.2 release notes](https://github.com/Exlumina/storyboard-studio/releases/tag/v0.5.2) · [SHA-256 checksum](https://github.com/Exlumina/storyboard-studio/releases/download/v0.5.2/SHA256SUMS.txt)
 
 ## Start
 
-Requires Python 3.11 or newer and a modern desktop browser. There are no Python packages, npm dependencies, accounts, or cloud services to install.
+Extract the ZIP, open a terminal in the extracted folder, and run:
 
 ```sh
 python3 scripts/launch_storyboard.py --project ./projects/My_Film --title "My film" --port 8840
 ```
 
-Open the loopback URL printed by the launcher. It binds only to 127.0.0.1 and selects another free port if needed. Your boards, original imports, revisions, and receipts stay in that project folder. Keep projects outside the source checkout when possible, and back them up as ordinary private folders.
+Open the local URL printed by the launcher. The editor uses the Python standard library and runs without an account or cloud service. It binds only to 127.0.0.1 and selects another free port if needed. Your boards, original imports, revisions, and receipts stay in that project folder. Keep projects outside the source checkout when possible, and back them up as ordinary private folders.
 
 For a synthetic example with three described scenes and no proprietary media:
 
