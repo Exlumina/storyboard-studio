@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="48" viewBox="0 0 240 48" role="img" aria-labelledby="title">
+  <title id="title">Download ZIP</title>
+  <rect x="0.5" y="0.5" width="239" height="47" rx="9" fill="#18243A" stroke="#B6916E"/>
+  <path d="M51 14v13m-5-5 5 5 5-5M43 29v4h16v-4" fill="none" stroke="#F6F2EA" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="72" y="24" dominant-baseline="central" font-family="system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="16" font-weight="650" fill="#F6F2EA">Download ZIP</text>
+</svg>
