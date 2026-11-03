@@ -4,9 +4,10 @@ Plan scenes, connect them into a sequence, and keep timing, reference media, and
 
 ## Download
 
-[![Download Storyboard Studio ZIP (v0.5.2)](https://img.shields.io/badge/Download-Storyboard_Studio_ZIP-222222?style=for-the-badge)](https://github.com/Exlumina/storyboard-studio/releases/download/v0.5.2/Storyboard_Studio_v0.5.2.zip)
+<p><a href="https://github.com/Exlumina/storyboard-studio/releases/download/v0.5.2/Storyboard_Studio_v0.5.2.zip"><img src=".github/downloads/download-zip.svg" width="240" height="48" alt="Download Storyboard Studio ZIP (v0.5.2)"></a></p>
 
-Source package · Python 3.11+ and a modern desktop browser.
+v0.5.2 · ZIP source package<br>
+Python 3.11+ and a modern desktop browser.
 
 [v0.5.2 release notes](https://github.com/Exlumina/storyboard-studio/releases/tag/v0.5.2) · [SHA-256 checksum](https://github.com/Exlumina/storyboard-studio/releases/download/v0.5.2/SHA256SUMS.txt)
 
